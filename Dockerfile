@@ -10,7 +10,6 @@ RUN apk add --no-cache \
     php83-openssl \
     php83-sockets \
     php83-mbstring \
-    supervisor \
     tzdata
 
 ENV TZ=Asia/Tehran
@@ -63,23 +62,14 @@ RUN mkdir -p /run/nginx /run/php && \
         } \
     }' > /etc/nginx/http.d/default.conf
 
-# تنظیم مجوزهای دسترسی دایرکتوری‌ها
+# تنظیم مجوزهای دسترسی دایرکتوری‌ها و اسکریپت ورودی
 RUN chown -R nobody:nobody /var/www/html && \
     chmod -R 755 /var/www/html && \
-    chmod -R 775 /var/www/html/include /var/www/html/voucher
-
-# پیکربندی Supervisord برای مدیریت همزمان Nginx و PHP-FPM
-RUN printf '%s\n' \
-    '[supervisord]' 'nodaemon=true' 'user=root' \
-    '[program:php-fpm]' 'command=/usr/sbin/php-fpm83 -F' 'autostart=true' 'autorestart=true' \
-    '[program:nginx]' 'command=/usr/sbin/nginx -g "daemon off;"' 'autostart=true' 'autorestart=true' \
-    > /etc/supervisord.conf && \
-    test -x /usr/bin/supervisord && \
-    test -x /usr/sbin/php-fpm83 && \
-    test -x /usr/sbin/nginx && \
+    chmod -R 775 /var/www/html/include /var/www/html/voucher && \
+    chmod +x /var/www/html/entrypoint.sh && \
     nginx -t && \
     php-fpm83 -t
 
 EXPOSE 80
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["/bin/sh", "/var/www/html/entrypoint.sh"]

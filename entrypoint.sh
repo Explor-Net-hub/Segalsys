@@ -4,5 +4,9 @@ set -e
 # استارت مفسر PHP-FPM در پس‌زمینه
 /usr/sbin/php-fpm83 -F &
 
-# استارت وب‌سرور Nginx در پیش‌زمینه (نگه داشتن کانتینر)
-exec /usr/sbin/nginx -g "daemon off;"
+# استارت Nginx در پس‌زمینه و ذخیره PID آن
+/usr/sbin/nginx -g "daemon off;" &
+NGINX_PID=$!
+
+# زنده نگه داشتن کانتینر و انتظار برای اتمام پردازش وب‌سرور
+wait "$NGINX_PID"

@@ -1,0 +1,9 @@
+.git
+.github
+*.rar
+*.zip
+*.log
+README.md
+nginx.conf
+docker-compose.yml
+Dockerfile

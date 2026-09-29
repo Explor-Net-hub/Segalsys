@@ -69,8 +69,17 @@ RUN chown -R nobody:nobody /var/www/html && \
     chmod -R 775 /var/www/html/include /var/www/html/voucher
 
 # پیکربندی Supervisord برای مدیریت همزمان Nginx و PHP-FPM
-RUN echo -e '[supervisord]\nnodaemon=true\nuser=root\n\n[program:php-fpm]\ncommand=/usr/sbin/php-fpm83 -F\nautostart=true\nautorestart=true\n\n[program:nginx]\ncommand=/usr/sbin/nginx -g "daemon off;"\nautostart=true\nautorestart=true' > /etc/supervisord.conf
+RUN printf '%s\n' \
+    '[supervisord]' 'nodaemon=true' 'user=root' \
+    '[program:php-fpm]' 'command=/usr/sbin/php-fpm83 -F' 'autostart=true' 'autorestart=true' \
+    '[program:nginx]' 'command=/usr/sbin/nginx -g "daemon off;"' 'autostart=true' 'autorestart=true' \
+    > /etc/supervisord.conf && \
+    test -x /usr/bin/supervisord && \
+    test -x /usr/sbin/php-fpm83 && \
+    test -x /usr/sbin/nginx && \
+    nginx -t && \
+    php-fpm83 -t
 
 EXPOSE 80
 
-CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
